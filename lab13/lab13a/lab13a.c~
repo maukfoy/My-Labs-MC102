@@ -1,0 +1,48 @@
+/* Nome: Mauricio Lorenzetti Bezerra
+ * RA: 156754
+ * Laboratorio 13a - JMob */
+
+#include <stdio.h>
+
+/* Retorna '1' se o mobile estiver em equilibrio e '0' caso contrario */
+int checaEquilibrio(int *peso){ 
+    /* Assume inicialmente em 'flagEq' que o mobile esta em equilibrio */
+    int pEsq, pDir, dEsq, dDir, flagEq = 1;
+    
+    scanf ("%d %d %d %d", &pEsq, &dEsq, &pDir, &dDir);
+    
+    /* Verifica o equilibrio recursivamente em todo mobile*/
+    /* Se uma barra esta desequilibrada, o mobile esta desequilibrado */
+    if (pEsq == 0)
+        if (mobile(&pEsq) == 0)
+            flagEq = 0;    
+    if (pDir == 0)
+        if (mobile(&pDir) == 0)
+            flagEq = 0;
+    
+    /* Calcula o peso da barra */
+    *peso = pEsq + pDir;
+    
+    /* Verifica o equilibrio nos pesos da barra */
+    if (pEsq * dEsq != pDir * dDir)
+        flagEq = 0;
+    
+    /* Retorna '1' se o equilibrio for e verdadeiro e '0' se for falso */
+    return flagEq;
+}
+
+int main() {
+    
+    int pTotal = 0;
+    
+    /* Checa o equilibrio e imprime a resposta na tela */
+    if (checaEquilibrio(&pTotal) == 1)
+        printf("Mobile equilibrado\n");
+    else
+        printf("Mobile desequilibrado\n");
+    
+    /* Imprime o peso total do mobile */
+    printf("Peso total: %d\n", pTotal);
+    
+    return 0;
+}

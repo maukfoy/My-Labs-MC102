@@ -1,0 +1,259 @@
+/**************************************************
+ * Nome: Miguel Henrique Nicodemus de Souza Pinto *
+ * RA: 156777                                     *
+ * Laboratorio 15b - Don't Panic - Part II        *
+ **************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX_TAM 40
+int encontraPosMax(int pancakes[], int num_pancakes);
+void combinacao_simples(int num_pancakes, int pancakes[], int temp[], int next, int size, int *peso_minimo, int peso_superior, int      peso_salva);
+void leVet (int vet[], int n);
+void flipVet(int vet[], int n, int a, int b);
+void imprimeVet (int vet[], int n);
+int indiceAntecessor(int vet[], int n, int termo);
+int achaStripFinal(int vet[], int n);
+int achaPosStripFinal(int vet[], int n);
+int indiceSucessor(int vet[], int n, int termo);
+int indiceAntecessor(int vet[], int n, int termo);
+int main()
+{
+    int num_pancakes;
+    int *pancakes;
+    int transposicoes[2];
+    int peso_minimo = 0;
+    int limitante_inferior;
+    int *vet;
+    int i, j, stripf, posstripf;
+    int jAntStrip = 0, jSucStrip = 0;
+    int peso = 0;
+
+    scanf("%d", &num_pancakes);
+
+    pancakes = malloc((num_pancakes + 2) * (sizeof (int)));
+    vet = malloc((num_pancakes + 2) * (sizeof (int)));
+
+    leVet(pancakes, num_pancakes);
+
+
+    for (i = 0; i < num_pancakes + 2; i++)
+    {
+        vet[i] = pancakes[i];
+    }
+
+    limitante_inferior = pancakes[encontraPosMax(pancakes, num_pancakes)];
+
+    printf("Limitante inferior: %d\n", limitante_inferior);
+
+    while(encontraPosMax(vet, num_pancakes) != 0)
+    {
+
+        stripf = achaStripFinal(vet, num_pancakes);
+        jAntStrip = indiceAntecessor(vet, num_pancakes, vet[1]);
+        jSucStrip = indiceSucessor(vet, num_pancakes, stripf);
+        posstripf = achaPosStripFinal(vet, num_pancakes);
+
+        /* Esse trecho procura a transposicao de menor peso, alem de checar no
+         * caso da transposicao de menor peso ser a do antecessor se
+         * existe alguma solucao que retira dois breakpoints. Se sim, faz essa
+         * operacao em favor da outra. Depois, faz o filp e incrementa os
+         * pesos  */
+        if (jAntStrip < jSucStrip && jAntStrip != 0)
+        {
+           j = jAntStrip;
+            for (i = posstripf; i < jAntStrip; i++)
+            {
+                if (vet[i] != vet[i + 1] - 1)
+                {
+                    if (vet[i] == vet[j + 1] - 1)
+                    {
+                        posstripf = i;
+                    }
+                }
+            }
+            flipVet(vet, num_pancakes, posstripf, j + 1);
+            peso += j;
+        }
+
+        else if (jAntStrip > jSucStrip || jAntStrip == 0)
+        {
+            j = jSucStrip;
+            flipVet(vet, num_pancakes, posstripf, j);
+            peso += j - 1;
+        }
+    }
+    
+    peso_minimo = peso;
+
+    combinacao_simples(num_pancakes, pancakes, transposicoes, 2, 0, &peso_minimo, peso, 0);
+
+    printf("Peso: %d\n", peso_minimo);
+    printf("Limitante superior: %d\n", peso);
+
+    free(pancakes);
+    free(vet);
+
+    return 0;
+}
+void combinacao_simples(int num_pancakes,int pancakes[],int temp[], int next, int size, int *peso_minimo, int peso_superior, int  peso_salva)
+{
+    int posMax;
+    int i;
+    int peso_atual = peso_salva;
+    int aux[15];
+    int aux2[2] = {1,2};
+
+    if (size == 2)
+    {
+        for (i = 0; i < num_pancakes + 2; i++)
+        {
+            aux[i] = pancakes[i];
+        }
+
+        flipVet(pancakes, num_pancakes, temp[0], temp[1] + 1);
+        peso_atual += temp[1] - 1;
+        
+        printf("transp: %d %d p: %d %d\n", temp[0], temp[1], peso_atual, pancakes[encontraPosMax(pancakes, num_pancakes)]);
+
+        posMax = encontraPosMax(pancakes, num_pancakes);
+        if (posMax == 0 && peso_atual < *peso_minimo)
+        {
+            *peso_minimo = peso_atual;
+            return;
+        }
+        if (peso_atual < peso_superior)
+        {
+            combinacao_simples(num_pancakes, aux, aux2, 2, 0, peso_minimo, peso_superior, peso_atual);
+        }
+    }
+    else
+    {
+        for (i = next; i <= num_pancakes; i++)
+        {
+            temp[size] = i;
+            combinacao_simples(num_pancakes, aux ,temp, i + 1, size + 1, peso_minimo, peso_superior, peso_salva);
+        }
+    }
+}
+void leVet (int vet[], int n)
+{
+    int i;
+
+    vet[0] = 0;
+    vet[n + 1] = n + 1;
+
+    for (i = 1; i <= n; i++)
+    {
+        scanf("%d", &vet[i]);
+    }
+}
+int encontraPosMax(int pancakes[], int num_pancakes)
+{
+    int posMax = 0;
+    int max = 0;
+    int i;
+    for (i = 1; i <= num_pancakes; i++)
+    {
+        if (pancakes[i] > max && pancakes[i] != i)
+        {
+            max = pancakes[i];
+            posMax = i;
+        }
+    }
+
+    return posMax;
+}
+void flipVet(int vet[], int n, int a, int b)
+{
+    int i, j;
+    int vet_aux1[MAX_TAM], vet_aux2[MAX_TAM];
+    int tam1 = 0, tam2 = 0;
+
+    for (i = 1; i <= a; i++)
+    {
+        vet_aux1[i] = vet[i];
+        tam1++;
+    }
+
+    for (i = a + 1, j = 1; i < b; i++, j++)
+    {
+        vet_aux2[j] = vet[i];
+        tam2++;
+    }
+
+    for (i = 1; i <= tam2; i++)
+    {
+        vet[i] = vet_aux2[i];
+    }
+
+    for (i = tam2 + 1, j = 1; i < b; i++, j++)
+    {
+        vet[i] = vet_aux1[j];
+    }
+}
+void imprimeVet (int vet[], int n)
+{
+    int i;
+
+    printf("(%d", vet[1]);
+    for (i = 2; i <= n; i++)
+    {
+        printf(" %d", vet[i]);
+    }
+    printf(")");
+    printf("\n");
+}
+int achaStripFinal(int vet[], int n)
+{
+    int i;
+
+    for (i = 1; i <= n; i++)
+    {
+        if (vet[i + 1] != vet[i] + 1)
+        {
+            return vet[i];
+        }
+    }
+    return 0;
+}
+
+int achaPosStripFinal(int vet[], int n)
+{
+    int i;
+
+    for (i = 1; i <= n; i++)
+    {
+        if (vet[i + 1] != vet[i] + 1)
+        {
+            return i;
+        }
+    }
+    return 0;
+}
+int indiceSucessor(int vet[], int n, int termo)
+{
+    int i;
+
+    for(i = 1; i <= n + 1; i++)
+    {
+        if (vet[i] == termo + 1)
+        {
+            return i;
+        }
+    }
+    return 0;
+}
+int indiceAntecessor(int vet[], int n, int termo)
+{
+    int i;
+
+    for(i = 0; i <= n; i++)
+    {
+        if (vet[i] == termo - 1)
+        {
+            return i;
+        }
+    }
+    return 0;
+}

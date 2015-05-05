@@ -6,9 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*Declaracao da estrutura de dados de cada referencia */
+/* Declaracao da estrutura de dados de cada referencia */
 struct Article {
-    char label[451];
     char author[501];
     char title[501];
     char journal[101];
@@ -54,32 +53,34 @@ int main() {
 void leEntradas(int nEntradas, Article entradas[]){
     
     int i;
-    char campo[8];
+    char campo[8], *aponta;
     
     /* Le os dados de cada estrutura */
     for (i = 0; i < nEntradas; i++){
-        /* Le cada label e garante que este funcionara na proxima iteracao*/
-        scanf ("%*[\n@article{] %[^,]s",entradas[i].label);
-        while (getchar() != '\n'){};
-        /* Le os dados de cada referencia conforme eles sao disponibilizados */
+        /* Descarta cada label lido */
+        scanf ("%*[^,]");
         do{
+            /* Le o campo que a informacao seguinte sera inserido */
             scanf ("%s", campo);
+            /* Armazena em 'aponta' o endereco do campo correspondente */
             if (strcmp (campo, "author") == 0){
-                scanf ("%*[author = {] %[^}]s %*[,]", entradas[i].author);
+                aponta = entradas[i].author;
             }else if (strcmp (campo, "title") == 0){
-                scanf ("%*[title = {] %[^}]s %*[,]", entradas[i].title);
+                aponta = entradas[i].title;
             }else if (strcmp (campo, "journal") == 0){
-                scanf ("%*[journal = {] %[^}]s %*[,]", entradas[i].journal);
+                aponta = entradas[i].journal;
             }else if (strcmp (campo, "year") == 0){
-                scanf ("%*[year = {] %[^}]s %*[,]", entradas[i].year);
+                aponta = entradas[i].year;
             }else if (strcmp (campo, "volume") == 0){
-                scanf ("%*[volume = {] %[^}]s %*[,]", entradas[i].volume);
+                aponta = entradas[i].volume;
             }else if (strcmp (campo, "number") == 0){
-                scanf ("%*[number = {] %[^}]s %*[,]", entradas[i].number);
+                aponta = entradas[i].number;
             }else if (strcmp (campo, "pages") == 0){
-                scanf ("%*[pages = {] %[^}]s %*[,]", entradas[i].pages);
+                aponta = entradas[i].pages;
             }
-        /* Mantem a leitura ate que a chave que contem tal referencia seja fechada */  
+            /* Le a informacao seguinte no campo cujo endereco esta em 'aponta' */
+            scanf ("%*[= {] %[^}]s %*[,]", aponta);
+        /* Mantem a leitura ate que a referencia seja fechada com '}' */  
         }while (strcmp(campo, "}"));
     }
 }
@@ -91,9 +92,11 @@ void insereValor(int inicio, Article entradas[]){
     
     Article temp = entradas[inicio];
     
+    /* Desloca todas posicoes maiores lexicalmente para a direita */
     for (i = inicio - 1; (i >= 0) && (strcmp(entradas[i].title, temp.title) > 0); i--)
         entradas[i + 1] = entradas[i];
     
+    /* Insere a referencia na posicao correta */
     entradas[i + 1] = temp;
 }
 
@@ -102,6 +105,7 @@ void ordenaLexic(int nEntradas, Article entradas[]){
     
     int i;
     
+    /* Ordena um vetor de referencias lexicalmente */
     for (i = 1; i < nEntradas; i++)
         insereValor(i, entradas);
 }
@@ -111,9 +115,9 @@ void zeraEntradas(int nEntradas, Article entradas[]){
     
     /* Declara uma estrutura "zerada" */
     int i;
-    Article zerado = {"\0", "\0", "\0", "\0", "\0", "\0", "\0", "\0"};
+    Article zerado = {"\0", "\0", "\0", "\0", "\0", "\0", "\0"};
     
-    /* Iguala todas a essa anterior */
+    /* Iguala todas entradas a zerada */
     for (i = 0; i < nEntradas; i++)
         entradas[i] = zerado;
 }
@@ -132,8 +136,6 @@ void imprimeRefer(int nEntradas, Article entradas[]){
             printf (", %s", entradas[i].number);
         if (entradas[i].pages[0] != '\0')
             printf (", %s", entradas[i].pages);
-        if (entradas[i].year[0] != '\0')
-            printf (", %s", entradas[i].year);
-        printf (".\n\n");
+        printf (", %s.\n\n", entradas[i].year);
     }
 }

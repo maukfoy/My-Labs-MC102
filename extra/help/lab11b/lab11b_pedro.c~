@@ -1,0 +1,109 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Livro {
+    char author[502];
+    char title[502];
+    char journal[102];
+    char year[52];
+    char volume[52];
+    char number[52];
+    char pages[52];   
+};
+typedef struct Livro Livro;
+
+void EntreColchetes(char informacao[], char auxiliar[]) {
+    int i, j, inicio, fim;
+    
+    inicio = strcspn(auxiliar,"{");
+    fim = strcspn(auxiliar,"}");
+    
+    for (i = inicio + 1, j = 0; i < fim; i++, j++)
+        informacao[j] = auxiliar[i];
+    
+    informacao[j] = '\0';
+}
+
+int main () {   
+    int N, i, j, flag = 1, aux;
+    char label[452], auxiliar[502], informacao[502];
+    Livro *livros;
+    Livro auxilio;
+    
+    scanf ("%*c %d\n", &N);
+    
+    /*alocao dinamica do numero de posicoes do vetor livros*/
+    livros = malloc (N * sizeof(Livro));
+    
+    /*coloca "vazio em volume, number e pages dos livros*/
+    for (i =0; i < N; i++){
+        strcpy (livros[i].volume, "vazio");
+        strcpy (livros[i].pages, "vazio");
+        strcpy (livros[i].number, "vazio");
+    }
+    
+    for ( i = 0; i < N; i++) {
+        
+        /*leitura do label do livro no vetor descartavel "label"*/
+        fgets (label, 452, stdin);
+       
+        while (flag) {
+            
+            /*leitura da linha de informacao do livro*/
+            fgets (auxiliar, 502, stdin);
+            
+            EntreColchetes (informacao, auxiliar);
+          
+            /*indentificacao do topico dessa linha*/
+            if (auxiliar[1] == 'a')
+                strcpy (livros[i].author, informacao);
+            else if (auxiliar[1] == 't')
+                strcpy (livros[i].title, informacao);
+            else if (auxiliar[1] == 'j')
+                strcpy (livros[i].journal, informacao);
+            else if (auxiliar[1] == 'v')
+                strcpy (livros[i].volume, informacao);
+            else if (auxiliar[1] == 'p')
+                strcpy (livros[i].pages, informacao);
+            else if (auxiliar[1] == 'n')
+                strcpy (livros[i].number, informacao);
+            else if (auxiliar[1] == 'y')
+                strcpy (livros[i].year, informacao);
+            else if (auxiliar[0] == '}')
+                flag = 0;           
+        }
+        flag = 1;
+    }
+    
+   
+    /*selection sort para os livros de acordo com seus titulos*/
+     for (j = 0; j < N ; j++) {
+         aux = j;
+         for ( i = j; i < N; i++) {
+            if (strcmp (livros[i].title, livros[aux].title ) < 0)
+                aux = i;
+        }
+        auxilio = livros[j];
+        livros[j] = livros[aux];
+        livros[aux] = auxilio;
+     }
+     
+     for (i = 0; i < N; i++) {
+        printf ("%s,", livros[i].title);
+        printf (" %s,", livros[i].author);
+        printf (" %s,", livros[i].journal);
+        if (strcmp (livros[i].volume, "vazio" ) != 0)
+            printf (" %s,", livros[i].volume);
+        if (strcmp (livros[i].number, "vazio" ) != 0)
+            printf (" %s,", livros[i].number);
+        if (strcmp (livros[i].pages, "vazio" ) != 0)
+            printf (" %s,", livros[i].pages);
+        printf ("%s.", livros[i].year);
+        printf ("\n\n");
+    } 
+    
+    free (livros);
+    
+    return 0;
+}

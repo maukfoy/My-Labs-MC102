@@ -1,0 +1,50 @@
+#include <stdio.h>
+
+#define NDIG 9
+#define OPER 3
+
+/*int geraArranjo(int permutacao[], int indice) {
+    
+    int i;
+    
+    if (indice == NDIG){
+        for (i = 0; i < NDIG; i++)
+            printf("%2d ", permutacao[i]);
+        printf("\n");
+    }
+    
+    else{
+        for (i = -1; i <= 1; i++){
+            permutacao[indice] = i;
+            geraArranjo(permutacao, indice + 1);
+        }
+    }
+    return 0;
+}*/
+
+int geraArranjo(int operadores[], int codigo[], int numSeg, int indice){
+    
+    int i;
+    
+    if (indice == NDIG){
+        for (i = 0; i < NOPE; i++)
+            printf("%2d", operadores[i]);
+        printf("\n");
+    }
+    else {
+        for (i = -1; i <= 1; i++){
+            operadores[indice] = i;
+            geraArranjo(operadores, codigo, numSeg, indice + 1);
+        }
+    }
+    return 0;
+}
+
+int main(){
+    
+    int vetor[NDIG];
+    
+    geraArranjo(vetor, 0, 0, 0);
+    
+    return 0;
+}

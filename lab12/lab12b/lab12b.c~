@@ -1,0 +1,136 @@
+/* Nome: Mauricio Lorenzetti Bezerra
+ * RA: 156754
+ * Laboratorio 12b - Whiteworse */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* Tamanho maximo do nome do titular */
+#define MAXNOME 21
+/* Tamanho maximo do nome dos arquivos de entrada/saida */
+#define MAXNOMEARQ 101
+/* Numero maximo de contas */
+#define MAXCONTAS 20
+/* Numero maximo de transacoes */
+#define MAXTRANS 40
+/* Valor da taxa de deposito em conta com saldo negativo */
+#define TAXA 5.00
+
+/* Conta
+ * ag = numero da agencia
+ * cc = numero da conta corrente
+ * titular = Nome do titular da conta
+ * saldo = Saldo da conta
+ */
+struct Conta {
+    int ag;
+    int cc;
+    char titular[MAXNOME];
+    double saldo;
+};
+
+typedef struct Conta Conta;
+
+/* Transacao
+ * tipo - 'D' para Depositos e 'S' para Saques
+ * ag - Numero da agencia
+ * cc - Numero da conta corrente
+ * valor - Valor da operacao
+ */
+struct Transacao {
+    char tipo;
+    int ag;
+    int cc;
+    double valor;
+};
+
+typedef struct Transacao Transacao;
+
+void imprimeDados(int nContas, int nTrans, Conta contas[], Transacao transacoes[]){
+                   
+    int i;
+    
+    for (i = 0; i < nContas; i++){
+        printf("%d %d %s %.2f\n", contas[i].ag, contas[i].cc, contas[i].titular, contas[i].saldo);
+    }
+    
+    for (i = 0; i < nTrans; i++){
+        printf("%c %d %d %.2f\n", transacoes[i].tipo, transacoes[i].ag, transacoes[i].cc, transacoes[i].valor);
+
+    }
+}
+
+int indiceConta(int agencia, int conta, int nContas, Conta contas[]){
+    
+    int i;
+    
+    for (i = 0; i < nContas; i++)
+        if (agencia == contas[i].ag)
+            if (conta == contas[i].cc)
+                return i;
+    return -1;
+}
+
+int main(int argc, char **argv) {
+    
+    /* Nome do arquivo binario com as contas */
+    char nomeArqConta[MAXNOMEARQ];
+    /* Nome do arquivo binario com as transacoes */
+    char nomeArqTrans[MAXNOMEARQ];
+    /* Nome do arquivo binario de saida */
+    char nomeArqSaida[MAXNOMEARQ];
+    
+    FILE *fContas, *fTrans;
+    FILE *fSaida;
+    int i, iConta;
+    int nContas, nTrans;
+    Conta *contas;
+    Transacao *transacoes;
+    
+    /* Obtendo o nome dos arquivos */
+    strcpy(nomeArqConta, argv[1]);
+    strcpy(nomeArqTrans, argv[2]);
+    strcpy(nomeArqSaida, argv[3]);
+    
+    fContas = fopen(nomeArqConta, "rb");
+    fTrans = fopen(nomeArqTrans, "rb");
+    remove(nomeArqSaida);
+    fSaida = fopen(nomeArqSaida, "wb");
+    
+    fread(&nContas, sizeof(int), 1, fContas);
+    fread(&nTrans, sizeof(int), 1, fTrans);
+    
+    contas = malloc(nContas * sizeof(Conta));
+    transacoes = malloc(nTrans * sizeof(Transacao));
+    
+    fread(&contas[0], sizeof(Conta), nContas, fContas);
+    fread(&transacoes[0], sizeof(Transacao), nTrans, fTrans);
+   
+    for (i = 0; i < nTrans; i++){
+        iConta = indiceConta(transacoes[i].ag, transacoes[i].cc, nContas, contas);
+        if (transacoes[i].tipo == 'D' && iConta != -1){
+            contas[iConta].saldo += transacoes[i].valor;
+            printf("T%d: %c %d %d %.2f\n", i, transacoes[i].tipo,
+                    transacoes[i].ag, transacoes[i].cc, transacoes[i].valor);
+        } else if (transacoes[i].tipo == 'S' && iConta != -1){
+            if (contas[iConta].saldo - transacoes[i].valor >= -100.0){
+                contas[iConta].saldo -= (transacoes[i].valor + 5);
+                printf("T%d: %c %d %d %.2f\n", i, transacoes[i].tipo,
+                        transacoes[i].ag, transacoes[i].cc, transacoes[i].valor);
+            }
+        }
+    }
+    
+    fwrite(&nTrans, sizeof(int), 1, fSaida);
+    for (i = 0; i < nTrans; i++)
+        fwrite(&transacoes[i], sizeof(Transacao), 1, fSaida);
+   
+    /*imprimeDados(nContas, nTrans, contas, transacoes);*/
+    
+    fclose(fContas);
+    fclose(fTrans);
+    fclose(fSaida);
+    
+    return 0;
+}

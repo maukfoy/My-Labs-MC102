@@ -1,0 +1,18 @@
+#include <stdio.h>
+
+unsigned long int potencia(unsigned long int x, int k){
+    
+    if (k == 0)
+        return 1;
+    return x * (potencia(x, k - 1));
+}
+
+int main(){
+    unsigned long int x;
+    int k;
+    
+    scanf("%lu %d", &x, &k);
+    printf("%lu\n", potencia(x,k));
+    
+    return 0;
+}
